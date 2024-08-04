@@ -1631,13 +1631,11 @@ byte onModeSense(SCSI_DEVICE *dev, const byte *cdb)
   byte dbd = cdb[1] & 0x8;
   byte block_descriptor_length = 8;
 
-  // saving parameters is not allowed...yet!
+  // GLB : Per the spec, we should just return current values when PS bit is set
+  //       and the target doesn't support save (as if pageControl=0).
+  //       Fixes drive detection issues on Amiga 3000 w/on-board SCSI, at least.
   if(pageControl == 3)
-  {
-    dev->m_senseKey = SCSI_SENSE_ILLEGAL_REQUEST;
-    dev->m_additional_sense_code = SCSI_ASC_SAVING_PARAMETERS_NOT_SUPPORTED;
-    return SCSI_STATUS_CHECK_CONDITION;
-  }
+    pageControl = 0;
 
   // SCSI_MODE_SENSE6
   int a = 4;
